@@ -3,35 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apple 官方韌體完整清單與下載</title>
+    <title>Apple 官方韌體動態下載站</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col justify-between text-gray-800">
 
     <header class="bg-white border-b border-gray-200 py-4 shadow-sm sticky top-0 z-10">
         <div class="max-w-3xl mx-auto px-4 text-center">
-            <h1 class="text-xl font-bold text-gray-900"> Apple 官方韌體完整清單</h1>
-            <p class="text-xs text-gray-500 mt-1">資料來源：ipsw.me API (完整列出所有機型與認證狀態)</p>
+            <h1 class="text-xl font-bold text-gray-900"> Apple 官方韌體動態下載站</h1>
+            <p class="text-xs text-gray-500 mt-1">資料來源：ipsw.me API (即時動態抓取)</p>
         </div>
     </header>
 
     <main class="max-w-3xl w-full mx-auto p-4 md:p-6 my-auto mt-4 mb-auto">
         
-        <!-- 搜尋與篩選列 -->
+        <!-- 步驟 1: 依分類群組的機型選單 -->
         <div class="bg-white p-4 rounded-2xl shadow-md mb-6">
-            <div class="mb-3">
-                <label for="deviceSelect" class="block mb-1.5 font-semibold text-sm text-gray-700">1. 選擇或搜尋產品機型：</label>
-                <select id="deviceSelect" class="w-full p-3 border border-gray-300 rounded-xl bg-white text-base focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    <option value="">載入所有裝置列表中...</option>
-                </select>
-            </div>
+            <label for="deviceSelect" class="block mb-1.5 font-semibold text-sm text-gray-700">1. 選擇產品與機型（已自動分類）：</label>
+            <select id="deviceSelect" class="w-full p-3 border border-gray-300 rounded-xl bg-white text-base focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <option value="">正在從 ipsw.me API 載入所有分類機型...</option>
+            </select>
         </div>
 
-        <!-- 軟體版本與認證狀態列表區 -->
+        <!-- 步驟 2: 動態顯示該機型所有軟體版本與認證狀態 -->
         <div class="bg-white p-4 rounded-2xl shadow-md">
-            <h2 class="font-semibold text-sm text-gray-700 mb-3">2. 該機型所有軟體版本與認證狀態：</h2>
+            <h2 class="font-semibold text-sm text-gray-700 mb-3">2. 該機型所有軟體版本與認證狀態 (動態清單)：</h2>
             <div id="firmwareList" class="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-                <p class="text-sm text-gray-400 text-center py-6">請先在上方選擇一個產品機型</p>
+                <p class="text-sm text-gray-400 text-center py-6">請先在上方選擇一個機型</p>
             </div>
         </div>
 
@@ -45,32 +43,48 @@
         const deviceSelect = document.getElementById('deviceSelect');
         const firmwareList = document.getElementById('firmwareList');
 
-        // 頁面載入時抓取所有裝置
+        // 從官方 ipsw.me API 動態取得所有裝置並依分類群組 (optgroup)
         async function fetchDevices() {
             try {
                 const response = await fetch('https://api.ipsw.me/v4/devices');
                 const devices = await response.json();
                 
-                deviceSelect.innerHTML = '<option value="">-- 請選擇或切換產品機型 --</option>';
-                
+                deviceSelect.innerHTML = '<option value="">-- 請選擇產品與機型 --</option>';
+
+                // 依照 api 回傳的 type 進行分類 (例如 iPhone, iPad, Watch, AppleTV 等)
+                const grouped = {};
                 devices.forEach(device => {
-                    const option = document.createElement('option');
-                    option.value = device.identifier;
-                    option.textContent = `${device.name} (${device.identifier}) [${device.type}]`;
-                    deviceSelect.appendChild(option);
+                    const type = device.type ? device.type.toUpperCase() : 'OTHER';
+                    if (!grouped[type]) grouped[type] = [];
+                    grouped[type].push(device);
                 });
+
+                // 產生分類群組選項
+                for (const [type, list] of Object.entries(grouped)) {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = `--- ${type} ---`;
+
+                    list.forEach(device => {
+                        const option = document.createElement('option');
+                        option.value = device.identifier;
+                        option.textContent = `${device.name} (${device.identifier})`;
+                        optgroup.appendChild(option);
+                    });
+
+                    deviceSelect.appendChild(optgroup);
+                }
             } catch (error) {
-                deviceSelect.innerHTML = '<option value="">載入裝置失敗，請重新整理</option>';
+                deviceSelect.innerHTML = '<option value="">載入失敗，請檢查網路</option>';
             }
         }
 
-        // 當選擇某個機型時，將該機型的「所有軟體版本」全部列出來
+        // 當選擇某個機型時，即時動態從 API 取得該機型的所有軟體版本與認證狀態
         deviceSelect.addEventListener('change', async function() {
             const identifier = this.value;
-            firmwareList.innerHTML = '<p class="text-sm text-gray-500 text-center py-6">正在載入所有軟體版本與認證狀態...</p>';
+            firmwareList.innerHTML = '<p class="text-sm text-gray-500 text-center py-6">正在向 ipsw.me 查詢動態資料...</p>';
 
             if (!identifier) {
-                firmwareList.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">請先在上方選擇一個產品機型</p>';
+                firmwareList.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">請先在上方選擇一個機型</p>';
                 return;
             }
 
@@ -79,13 +93,13 @@
                 const data = await response.json();
                 
                 if (!data.firmwares || data.firmwares.length === 0) {
-                    firmwareList.innerHTML = '<p class="text-sm text-red-500 text-center py-6">此機型查無韌體資料</p>';
+                    firmwareList.innerHTML = '<p class="text-sm text-red-500 text-center py-6">此機型目前查無韌體資料</p>';
                     return;
                 }
 
                 firmwareList.innerHTML = '';
 
-                // 將該機型的每一個版本全部條列出來
+                // 動態列出所有軟體版本與認證標籤
                 data.firmwares.forEach(fw => {
                     const isSigned = fw.signed;
                     const statusBadge = isSigned 
@@ -100,7 +114,7 @@
                     card.innerHTML = `
                         <div>
                             <div class="flex items-center gap-2 flex-wrap mb-1">
-                                <span class="font-bold text-gray-800 text-base">iOS ${fw.version}</span>
+                                <span class="font-bold text-gray-800 text-base">iOS / 軟體 ${fw.version}</span>
                                 <span class="text-xs text-gray-500">(Build: ${fw.buildid})</span>
                                 ${statusBadge}
                             </div>
