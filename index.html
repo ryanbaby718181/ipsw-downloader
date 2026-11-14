@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Apple 官方 IPSW 韌體完整下載站</title>
+  <title>IPSW Downloads - 官方韌體整合下載站</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f5f5f7; color: #333; }
     header { background: #0071e3; color: #fff; padding: 15px 20px; text-align: center; display: flex; justify-content: space-between; align-items: center; }
     header h1 { margin: 0; font-size: 18px; }
-    .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
+    .container { max-width: 900px; margin: 20px auto; padding: 0 15px; }
     
     /* 步驟指示器 (1 2 3 4) */
     .steps-nav { display: flex; justify-content: space-around; background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
@@ -18,10 +18,12 @@
     .section-title { font-size: 22px; font-weight: bold; text-align: center; margin-bottom: 20px; color: #1d1d1f; }
     
     /* 網格與卡片樣式 */
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-    .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+    .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
     .card:hover { border-color: #0071e3; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,113,227,0.1); }
-    .card-title { font-size: 15px; font-weight: bold; margin-top: 10px; color: #1d1d1f; }
+    .card img { width: 90px; height: 90px; object-fit: contain; margin-bottom: 12px; }
+    .card-title { font-size: 14px; font-weight: bold; color: #1d1d1f; margin-bottom: 4px; }
+    .card-sub { font-size: 12px; color: #86868b; }
     
     /* 韌體列表與詳細資料樣式 */
     .fw-item { background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
@@ -66,7 +68,6 @@
     let selectedFirmware = null;
     let allDevicesData = [];
 
-    // 產品大類定義
     const categories = [
       { id: 'iPhone', name: 'iPhone', icon: '📱' },
       { id: 'iPad', name: 'iPad', icon: '💻' },
@@ -96,6 +97,13 @@
       document.getElementById('global-back').style.display = step > 1 ? 'block' : 'none';
     }
 
+    function goToStep(step) {
+      if (step === 1) renderStep1();
+      else if (step === 2 && selectedCategory) renderStep2();
+      else if (step === 3 && selectedDevice) renderStep3();
+      else if (step === 4 && selectedFirmware) renderStep4();
+    }
+
     // 步驟 1：選擇產品大類
     function renderStep1() {
       updateStepsNav(1);
@@ -104,9 +112,9 @@
         <div class="section-title">選擇產品系列</div>
         <div class="grid">
           ${categories.map(c => `
-            <div class="card" onclick="selectCategory('${c.id}')">
-              <div style="font-size: 36px;">${c.icon}</div>
-              <div class="card-title">${c.name}</div>
+            <div class="card" onclick="selectCategory('${c.id}')" style="padding: 30px 20px;">
+              <div style="font-size: 42px; margin-bottom: 10px;">${c.icon}</div>
+              <div class="card-title" style="font-size: 16px;">${c.name}</div>
             </div>
           `).join('')}
         </div>
@@ -118,12 +126,11 @@
       renderStep2();
     }
 
-    // 步驟 2：選擇具體機型
+    // 步驟 2：選擇具體機型（帶入官方預覽圖片）
     function renderStep2() {
       updateStepsNav(2);
       const content = document.getElementById('app-content');
       
-      // 過濾出屬於該大類的機型
       const filtered = allDevicesData.filter(d => {
         if (selectedCategory === 'iPhone') return d.identifier.startsWith('iPhone');
         if (selectedCategory === 'iPad') return d.identifier.startsWith('iPad');
@@ -140,8 +147,11 @@
         <div class="grid">
           ${filtered.map(d => `
             <div class="card" onclick="selectDevice('${d.identifier}')">
-              <div class="card-title" style="font-size: 14px;">${d.name}</div>
-              <div style="font-size: 12px; color: #86868b; margin-top: 5px;">${d.identifier}</div>
+              <img src="https://ipsw.me/assets/images/devices/${d.identifier}.png" alt="${d.name}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'90\' height=\'90\'><rect width=\'100%\' height=\'100%\' fill=\'%23f0f0f0\'/><text x=\'50%\' y=\'50%\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23888\' font-size=\'12\'>Apple</text></svg>'">
+              <div>
+                <div class="card-title">${d.name}</div>
+                <div class="card-sub">${d.identifier}</div>
+              </div>
             </div>
           `).join('')}
         </div>
@@ -213,7 +223,7 @@
       renderStep4();
     }
 
-    // 步驟 4：顯示詳細資訊 (SHA 雜湊、發布日期等)
+    // 步驟 4：顯示詳細資訊
     function renderStep4() {
       updateStepsNav(4);
       const content = document.getElementById('app-content');
@@ -245,7 +255,6 @@
       else if (currentStep === 4) renderStep3();
     }
 
-    // 初始化啟動
     init();
   </script>
 </body>
