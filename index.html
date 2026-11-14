@@ -10,14 +10,12 @@
     header h1 { margin: 0; font-size: 18px; }
     .container { max-width: 900px; margin: 20px auto; padding: 0 15px; }
     
-    /* 步驟指示器 (1 2 3 4) */
     .steps-nav { display: flex; justify-content: space-around; background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
     .step-num { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; background: #e5e5ea; color: #86868b; cursor: pointer; }
     .step-num.active { background: #0071e3; color: #fff; }
     
     .section-title { font-size: 22px; font-weight: bold; text-align: center; margin-bottom: 20px; color: #1d1d1f; }
     
-    /* 網格與卡片樣式 */
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
     .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
     .card:hover { border-color: #0071e3; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,113,227,0.1); }
@@ -25,7 +23,6 @@
     .card-title { font-size: 14px; font-weight: bold; color: #1d1d1f; margin-bottom: 4px; }
     .card-sub { font-size: 12px; color: #86868b; }
     
-    /* 韌體列表與詳細資料樣式 */
     .fw-item { background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     .badge-signed { color: #28a745; font-weight: bold; }
     .badge-unsigned { color: #dc3545; font-weight: bold; }
@@ -102,7 +99,6 @@
       else if (step === 4 && selectedFirmware) renderStep4();
     }
 
-    // 步驟 1：選擇產品系列
     function renderStep1() {
       updateStepsNav(1);
       const content = document.getElementById('app-content');
@@ -124,7 +120,6 @@
       renderStep2();
     }
 
-    // 步驟 2：選擇具體機型
     function renderStep2() {
       updateStepsNav(2);
       const content = document.getElementById('app-content');
@@ -145,7 +140,8 @@
         <div class="grid">
           ${filtered.map(d => `
             <div class="card" onclick="selectDevice('${d.identifier}')">
-              <img src="https://ipsw.me/assets/images/devices/${d.identifier}.png" alt="${d.name}" onerror="this.onerror=null; this.src='https://ipsw.me/assets/images/devices/iPhone14,2.png';">
+              <img src="https://ipsw.me/assets/images/devices/${d.identifier}.png" alt="${d.name}" 
+                   onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'90\' height=\'90\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%230071e3\' stroke-width=\'1.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><rect x=\'5\' y=\'2\' width=\'14\' height=\'20\' rx=\'2\' ry=\'2\'></rect><line x1=\'12\' y1=\'18\' x2=\'12.01\' y2=\'18\'></line></svg>';">
               <div>
                 <div class="card-title">${d.name}</div>
                 <div class="card-sub">${d.identifier}</div>
@@ -169,7 +165,6 @@
       }
     }
 
-    // 步驟 3：選擇韌體版本
     function renderStep3() {
       updateStepsNav(3);
       const content = document.getElementById('app-content');
@@ -229,7 +224,6 @@
       renderStep4();
     }
 
-    // 步驟 4：顯示詳細資訊
     function renderStep4() {
       updateStepsNav(4);
       const content = document.getElementById('app-content');
